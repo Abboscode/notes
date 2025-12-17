@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { getNotes } from "../controllers/notesControllers";
+import { getNotes ,createNotes} from "../controllers/notesControllers.js";
+
 
 
 const router = Router();
@@ -10,8 +11,8 @@ router.get("/",getNotes)
 // //get specific note
 // router.get("/:id")
 
-// //create note
-// router.post("/create")
+//create note
+ router.post('/create',createNotes)
 
 // //update note
 // router.put("/update/:id")

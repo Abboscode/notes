@@ -9,7 +9,7 @@ const testNote:NoteTable={
 }
 const notes : NoteTable[]=[testNote];
 let id:number=1; 
-export const createNoteService = (note: Note)=>{
+export const createNoteService = (note: Note):number=>{
 //validate the model
 
 try {
@@ -40,8 +40,8 @@ export const  getAllNotesService=():NoteTable[]=>{
     
 try {
     
-const allNotes = notes
-return allNotes;
+
+return notes;
 
 } catch (error){
     console.log("Cannot get notes. Please try again")

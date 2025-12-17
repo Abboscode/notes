@@ -7,7 +7,7 @@ export const getNotes=(req:Request,res:Response,next:NextFunction)=>{
         
        res.json({notes:getAllNotesService()})
 
-
+        console.log("notes fetched successfully")
     } catch (error) {
         
         next(error)
@@ -25,14 +25,24 @@ export const createNotes =(req:Request,res:Response,next:NextFunction)=>{
     try {
         
         //valdate data
-        const node=req.body;
-       const id:number= createNoteService(node)
-        if(!id){
-            res.status(200).json
-        }
+      
+   const {title,content}=req.body as Note;
+
+      const note:Note={title,content};
+      
+
+       const id:number= createNoteService(note)
+       // Basic check to see if body is coming through
+        if (!title || !content) {
+            return res.status(400).json({ message: "Title and content are required" });
+        } 
+       
+       return  res.status(201).json({success:true,message:"note created",id})
+       
 
     } catch (error) {
-        
+        console.log("Cannot create note. Please try")
+        next(error)
     }
 
 
