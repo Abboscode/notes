@@ -3,6 +3,7 @@ import type {  NoteTable } from "../models/note.js";
 import { findById } from "../utils.js";
 import { nextTick } from "node:process";
 import { json } from "node:stream/consumers";
+import { findPackageJSON } from "node:module";
 
 const testNote:NoteTable={
     id:1,
@@ -85,22 +86,39 @@ return true;
 
 }
 
-export  const getNoteByIdService=(id:number):NoteTable|JSON=>{
+export  const getNoteByIdService=(id:number):NoteTable|undefined=>{
 
 /** 
 @param {id} - the id of the note to retrieve
 @returns {NoteTable} or @returns {Json} error message
 */
     const note= findById(id,notes);
-    if(note){
+    if(note!==undefined){
         return note
     }
     
     
-    return JSON.parse("message: 404. Note not found")
+    return undefined;
+
 
 
 
 }
 
 
+export const updateNoteService=(id:number,modifiedNote:NoteTable):NoteTable|undefined=>{
+
+modifiedNote.updated_at=Date.now();
+
+const index=notes.findIndex(note=>note.id===id);
+console.log("Index",index)
+
+
+if(index===-1) return undefined;
+
+notes[index]=modifiedNote;
+return notes[index];
+
+
+
+}

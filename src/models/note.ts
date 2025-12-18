@@ -1,12 +1,11 @@
 
-//schemas
-export interface Note {
-    title: string;
-    content: string;
-}
+//schemas for notes
+
+
 export interface NoteTable{
 id:number;
-note:Note;
+title:string;
+content:string;
 updated_at:number;
 created_at:number;
 }

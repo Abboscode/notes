@@ -3,7 +3,8 @@ import type{  NoteTable } from './models/note.js';
 
 export const findById  =(id: number, notes: NoteTable[]):NoteTable|undefined =>{
 
-return notes.find(note=>note.id===id)
+return notes.find(note=>note.id===id)??undefined;
+
 
 
 
