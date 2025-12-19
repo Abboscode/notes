@@ -1,18 +1,14 @@
-import { error } from "node:console";
+
 import type {  NoteTable } from "../models/note.js";
 import { findById } from "../utils.js";
 import fs from 'fs'
 
 
 const jsonData: any[] = JSON.parse(fs.readFileSync('DATA.json','utf8'))
-// const testNote:NoteTable={
-//     id:1,
-//     title:"test"    ,content:"test",
-//     created_at:1,
-//     updated_at:1
-// }
-// console.log(jsonData[0])
+
+
 let notes : NoteTable[]=[];
+//format data 
 for (let i = 0; i < jsonData.length;i++){
 const data=jsonData[i]||undefined
 if(data){
@@ -32,17 +28,17 @@ notes.push(note)
 
 
 }
-//console.log(notes)
 
 
 
 
 
-let id=16
+
+
 export const createNoteService = (title:string,content:string):number=>{
 //validate the model
 const newNote={
-id:id++,
+id:0,
 title:title,
 content:content,
 created_at:Date.now().toString(),
