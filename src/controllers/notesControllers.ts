@@ -1,5 +1,5 @@
 import { type Response, type Request, type NextFunction } from "express";
-import { getAllNotesService, createNoteService, deleteNoteService, getNoteByIdService, updateNoteService } from "../services/noteServices.js"
+import { getAllNotesService, createNoteService, deleteNoteService, getNoteByIdService, updateNoteService, getNotesByPaginationService } from "../services/noteServices.js"
 import type { NoteTable } from "../models/note.js";
 import { findById, isIdNumber } from "../utils.js";
 const INVALID_ID_MESSAGE = { message: "Invalid ID" }
@@ -9,7 +9,21 @@ const NOT_FOUND = { message: "Note not found" }
 export const getNotes = (req: Request, res: Response, next: NextFunction) => {
     try {
 
-        res.json(getAllNotesService())
+        const page = parseInt(req.query.page as string || "1");
+        const limit=parseInt(req.query.limit as string||"10")
+        const data:NoteTable[]|undefined=getNotesByPaginationService(page,limit)
+        if(!data){
+            return res.status(400).json({message:"Bad respones from server no data has been fetched by given queres"})
+        }
+        
+        
+        res.status(200).json({
+            page:page,
+            limit:limit,
+            totalNotes:data.length,
+            data:data
+
+        })
 
         console.log("notes fetched successfully")
 

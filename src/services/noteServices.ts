@@ -152,3 +152,32 @@ return notes[index];
 
 
 }
+
+export const getNotesByPaginationService=(page:number,limit:number):NoteTable[]|undefined=>{
+    
+    try{
+        if(notes.length<limit) {
+            return notes;
+
+
+        }
+        const skip:number= (page-1)*limit;
+
+        
+        
+
+        const paginatedNotes:NoteTable[]=notes.slice(skip,skip+limit);
+        
+        return paginatedNotes??undefined;
+
+
+
+
+    }catch(err){
+        console.log("Error",err)
+        throw err
+    }
+    
+    
+    
+    }

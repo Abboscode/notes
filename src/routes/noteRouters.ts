@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getNotes ,createNotes,getNoteById,deleteNotes,updateNote} from "../controllers/notesControllers.js";
+import { getNotes ,createNotes,getNoteById,deleteNotes,updateNote, } from "../controllers/notesControllers.js";
 import { validateNoteMiddlewareOptional,validateNoteMiddlewareStrict } from "../middlewares/validateMiddleware.js"
 
 
@@ -19,5 +19,6 @@ router.patch("/update/:id",validateNoteMiddlewareOptional(["title","content"]),u
 
 // //delete note
 router.delete("/delete/:id",deleteNotes)
+
 
 export default router
