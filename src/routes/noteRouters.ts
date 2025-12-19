@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getNotes ,createNotes,getNoteById,deleteNotes,updateNote} from "../controllers/notesControllers.js";
-
+import { validateNoteMiddlewareOptional,validateNoteMiddlewareStrict } from "../middlewares/validateMiddleware.js"
 
 
 const router = Router();
@@ -12,10 +12,10 @@ router.get("/",getNotes)
  router.get("/:id",getNoteById)
 
 //create note
- router.post('/create',createNotes)
+ router.post('/create',validateNoteMiddlewareStrict(["title","content"]),createNotes)
 
 // //update note
-router.patch("/update/:id",updateNote)
+router.patch("/update/:id",validateNoteMiddlewareOptional(["title","content"]),updateNote)
 
 // //delete note
 router.delete("/delete/:id",deleteNotes)
