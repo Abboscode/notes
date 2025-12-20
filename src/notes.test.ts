@@ -39,7 +39,7 @@ describe('GET /notes', () => {
     describe('POST /notes/create', () => {
         it('should return 201 and the new note id on success', async () => {
             const res = await request(app)
-                .post('/notes/create')
+                .post('/notes')
                 .send({ title: "New", content: "Content" });
             
             expect(res.statusCode).toBe(201);
@@ -53,17 +53,17 @@ describe('GET /notes', () => {
 
         it('should return 400 if validation fails (missing title)', async () => {
             const res = await request(app)
-                .post('/notes/create')
+                .post('/notes')
                 .send({ content: "Missing Title" });
             
             expect(res.statusCode).toBe(400);
         });
     });
 
-    describe('PATCH notes/update/:id', () => {
+    describe('PATCH notes/:id', () => {
         it('should return 200 and update the note in the file', async () => {
             const res = await request(app)
-                .patch('/notes/update/4')
+                .patch('/notes/4')
                 .send({ title: "Updated Title" });
             
             expect(res.statusCode).toBe(200);
@@ -72,14 +72,14 @@ describe('GET /notes', () => {
         });
 
         it('should return 404 for a non-existent ID', async () => {
-            const res = await request(app).patch('/notes/update/999').send({ title: "Empty" });
+            const res = await request(app).patch('/notes/999').send({ title: "Empty" });
             expect(res.statusCode).toBe(404);
         });
     });
 
-    describe('DELETE /notes/delete/:id', () => {
+    describe('DELETE /notes/:id', () => {
         it('should return 200 and remove the note from the file', async () => {
-            const res = await request(app).delete('/notes/delete/4');
+            const res = await request(app).delete('/notes/4');
             expect(res.statusCode).toBe(200);
 
             // const fileData = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));

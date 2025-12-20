@@ -2,7 +2,7 @@ import fs from 'fs';
 import type { NoteTable } from "../models/note.js";
 import { findById } from "../utils.js";
 
-const FILE_PATH = 'DATA.json';
+const FILE_PATH = 'DATA_TEST.json';
 
 /**
  * Helper to read notes from the JSON file

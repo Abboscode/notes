@@ -1,25 +1,48 @@
 import { Router } from "express";
-import { searchByKeyword,getNotes ,createNotes,getNoteById,deleteNotes,updateNote, } from "../controllers/notesControllers.js";
-import { validateNoteMiddlewareOptional,validateNoteMiddlewareStrict } from "../middlewares/validateMiddleware.js"
-
+import { 
+    searchByKeyword, 
+    getNotes, 
+    createNotes, 
+    getNoteById, 
+    deleteNotes, 
+    updateNote 
+} from "../controllers/notesControllers.js";
+import { 
+    validateNoteMiddlewareOptional, 
+    validateNoteMiddlewareStrict 
+} from "../middlewares/validateMiddleware.js";
 
 const router = Router();
 
-// get all notes
-router.get("/",getNotes)
- router.get('/search/',searchByKeyword)
-//get specific note
- router.get("/:id",getNoteById)
+/**
+ * Note: Move specific paths (like /search) ABOVE parameterized paths (like /:id)
+ * to prevent the ID route from intercepting the search request.
+ */
 
-//create note
- router.post('/create',validateNoteMiddlewareStrict(["title","content"]),createNotes)
+// 1. Search notes (e.g., /notes/search?keyword=test)
+router.get('/search', searchByKeyword);
 
-// //update note
-router.patch("/update/:id",validateNoteMiddlewareOptional(["title","content"]),updateNote)
+// 2. Get all notes with pagination (e.g., /notes?page=1&limit=10)
+router.get("/", getNotes);
 
-// //delete note
-router.delete("/delete/:id",deleteNotes)
+// 3. Get specific note by ID
+router.get("/:id", getNoteById);
 
+// 4. Create note
+router.post(
+    '/', // Standard REST: POST to the base collection
+    validateNoteMiddlewareStrict(["title", "content"]), 
+    createNotes
+);
 
+// 5. Update note
+router.patch(
+    "/:id", // Standard REST: PATCH to the specific resource ID
+    validateNoteMiddlewareOptional(["title", "content"]), 
+    updateNote
+);
 
-export default router
+// 6. Delete note
+router.delete("/:id", deleteNotes);
+
+export default router;
