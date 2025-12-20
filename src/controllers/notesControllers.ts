@@ -1,5 +1,5 @@
 import { type Response, type Request, type NextFunction } from "express";
-import { getAllNotesService, createNoteService, deleteNoteService, getNoteByIdService, updateNoteService, getNotesByPaginationService } from "../services/noteServices.js"
+import { searchService,getAllNotesService, createNoteService, deleteNoteService, getNoteByIdService, updateNoteService, getNotesByPaginationService } from "../services/noteServices.js"
 import type { NoteTable } from "../models/note.js";
 import { findById, isIdNumber } from "../utils.js";
 const INVALID_ID_MESSAGE = { message: "Invalid ID" }
@@ -28,7 +28,6 @@ export const getNotes = (req: Request, res: Response, next: NextFunction) => {
         console.log("notes fetched successfully")
 
     } catch (error) {
-
         next(error)
     }
 
@@ -142,7 +141,7 @@ export const updateNote = (req: Request, res: Response, next: NextFunction) => {
 
         const updatedNote: NoteTable | undefined = updateNoteService(id, note)//applies all neccassary info changes too
         if (updatedNote === undefined) return res.status(400).json(NOT_FOUND)
-
+        
 
         res.status(200).json(updatedNote)
 
@@ -157,3 +156,18 @@ export const updateNote = (req: Request, res: Response, next: NextFunction) => {
 
 }
 
+export const searchByKeyword=(req: Request, res: Response, next:NextFunction)=>{
+console.log("inside searchKeyword")
+    const keyword=req.query.keyword as string;
+    
+    const respones:NoteTable[]|undefined=searchService(keyword);
+    console.log(respones)
+    if(respones===undefined) return res.status(400).json(NOT_FOUND)
+        
+        res.status(200).json({success:true,keyword:keyword,data:respones})
+
+
+
+
+
+}

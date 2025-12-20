@@ -181,3 +181,10 @@ export const getNotesByPaginationService=(page:number,limit:number):NoteTable[]|
     
     
     }
+
+    export const searchService=(keyword:string):NoteTable[]|undefined=>{
+
+        if(!keyword) return undefined;
+    return notes.filter(note=>note.content.toLowerCase().includes(keyword.toLowerCase()))??undefined;
+
+    }

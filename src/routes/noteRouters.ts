@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getNotes ,createNotes,getNoteById,deleteNotes,updateNote, } from "../controllers/notesControllers.js";
+import { searchByKeyword,getNotes ,createNotes,getNoteById,deleteNotes,updateNote, } from "../controllers/notesControllers.js";
 import { validateNoteMiddlewareOptional,validateNoteMiddlewareStrict } from "../middlewares/validateMiddleware.js"
 
 
@@ -7,7 +7,7 @@ const router = Router();
 
 // get all notes
 router.get("/",getNotes)
- 
+ router.get('/search/',searchByKeyword)
 //get specific note
  router.get("/:id",getNoteById)
 
@@ -19,6 +19,7 @@ router.patch("/update/:id",validateNoteMiddlewareOptional(["title","content"]),u
 
 // //delete note
 router.delete("/delete/:id",deleteNotes)
+
 
 
 export default router
