@@ -1,186 +1,169 @@
 import { type Response, type Request, type NextFunction } from "express";
-import { searchService,getAllNotesService, createNoteService, deleteNoteService, getNoteByIdService, updateNoteService, getNotesByPaginationService } from "../services/noteServices.js"
+import { 
+    searchService, 
+    createNoteService, 
+    deleteNoteService, 
+    getNoteByIdService, 
+    updateNoteService, 
+    getNotesByPaginationService 
+} from "../services/noteServices.js";
 import type { NoteTable } from "../models/note.js";
-import { findById, isIdNumber } from "../utils.js";
-const INVALID_ID_MESSAGE = { message: "Invalid ID" }
-const NOT_FOUND = { message: "Note not found" }
+import { isIdNumber } from "../utils.js";
 
-//show all notes
+const INVALID_ID_MESSAGE = { message: "Invalid ID" };
+const NOT_FOUND = { message: "Note not found" };
+
+/**
+ * Fetch all notes with pagination
+ */
 export const getNotes = (req: Request, res: Response, next: NextFunction) => {
     try {
-
         const page = parseInt(req.query.page as string || "1");
-        const limit=parseInt(req.query.limit as string||"10")
-        const data:NoteTable[]|undefined=getNotesByPaginationService(page,limit)
-        if(!data){
-            return res.status(400).json({message:"Bad respones from server no data has been fetched by given queres"})
-        }
+        const limit = parseInt(req.query.limit as string || "10");
         
+        const data: NoteTable[] | undefined = getNotesByPaginationService(page, limit);
         
-        res.status(200).json({
-            page:page,
-            limit:limit,
-            totalNotes:data.length,
-            data:data
-
-        })
-
-        console.log("notes fetched successfully")
-
-    } catch (error) {
-        next(error)
-    }
-
-
-
-}
-
-//create new note
-
-export const createNotes = (req: Request, res: Response, next: NextFunction) => {
-
-    try {
-
-
-        const { title, content } = req.body;
-
-        //validation data in middleware
-      
-
-    
-
-       
-
-        // Basic check to see if body is coming through
-        if (!title || !content) {
+        if (!data) {
             return res.status(400).json({ 
-                success: false, 
-                message: "Title and content are required" 
+                message: "Bad response from server: no data fetched for the given queries" 
             });
         }
 
-         const id: number = createNoteService(title, content)
-      return res.status(201).json({ 
-            success: true, 
-            message: "note created", 
-            id: id 
+        return res.status(200).json({
+            page: page,
+            limit: limit,
+            totalNotes: data.length,
+            data: data
         });
-
-
     } catch (error) {
-        console.log("Cannot create note. Please try")
-        next(error)
+        next(error);
     }
+};
 
-
-
-}
-
-export const deleteNotes = (req: Request, res: Response, next: NextFunction) => {
-
+/**
+ * Create a new note
+ */
+export const createNotes = (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { title, content } = req.body;
 
-        const id: number = parseInt(req.params.id ?? "")
-
-        if (!id) {
-
-            return res.status(400).json(INVALID_ID_MESSAGE);
-
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                message: "Title and content are required"
+            });
         }
 
-        if (isNaN(id)) {
-
-            return res.status(422).json()
-
-        }
-
-        const deleted: boolean = deleteNoteService(id)
-        if (deleted) {
+        const id: number = createNoteService(title, content);
         
-        res.status(200).json({message:"successuly deleted"})
+        return res.status(201).json({
+            success: true,
+            message: "Note created",
+            id: id
+        });
+    } catch (error) {
+        console.error("Cannot create note:", error);
+        next(error);
+    }
+};
 
+/**
+ * Delete a note by ID
+ */
+export const deleteNotes = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const idStr = req.params.id;
+
+        if (!isIdNumber(idStr)) {
+            return res.status(400).json(INVALID_ID_MESSAGE);
         }
 
+        const id = parseInt(idStr||'-1');
+        const deleted: boolean = deleteNoteService(id);
+
+        if (deleted) {
+            return res.status(200).json({ message: "Successfully deleted" });
+        } else {
+            return res.status(404).json(NOT_FOUND);
+        }
     } catch (error) {
-
-        next(error)
+        next(error);
     }
-}
+};
 
-//get the note by id
+/**
+ * Get a single note by ID
+ */
 export const getNoteById = (req: Request, res: Response, next: NextFunction) => {
-
-
-    //va;idate request data
     try {
         if (!isIdNumber(req.params.id)) {
-            return res.status(400).json(INVALID_ID_MESSAGE)
-
-
+            return res.status(400).json(INVALID_ID_MESSAGE);
         }
-        const id: number = parseInt(req.params.id || "")
 
-
+        const id = parseInt(req.params.id||'-1');
         const note: NoteTable | undefined = getNoteByIdService(id);
-        if (!note) return res.status(404).json(NOT_FOUND)
 
-        res.json(note)
+        if (!note) {
+            return res.status(404).json(NOT_FOUND);
+        }
 
+        return res.json(note);
     } catch (error) {
-        next(error)
+        next(error);
     }
-}
+};
 
-
+/**
+ * Update an existing note
+ */
 export const updateNote = (req: Request, res: Response, next: NextFunction) => {
-
     try {
-        console.log(req.params.id)
-        console.log("Headers:", req.headers['content-type']); // Should be application/json
-        console.log("Body:", req.body);
+        if (!isIdNumber(req.params.id)) {
+            return res.status(400).json(INVALID_ID_MESSAGE);
+        }
 
-        if (!isIdNumber(req.params.id)) return res.status(400).json(INVALID_ID_MESSAGE)
-        const id = Number(req.params.id)
-        const note = getNoteByIdService(id)
+        const id = Number(req.params.id);
+        const note = getNoteByIdService(id);
 
-        if (note === undefined) return res.status(404).json(NOT_FOUND)
+        if (!note) {
+            return res.status(404).json(NOT_FOUND);
+        }
 
-        console.log(req.body)
-        const title = req.body.title;
-        const content = req.body.content;
+        const { title, content } = req.body;
 
-        if (title !== undefined) note.title = title
-        if (content !== undefined) note.content = content
+        if (title !== undefined) note.title = title;
+        if (content !== undefined) note.content = content;
 
-        const updatedNote: NoteTable | undefined = updateNoteService(id, note)//applies all neccassary info changes too
-        if (updatedNote === undefined) return res.status(404).json(NOT_FOUND)
+        const updatedNote = updateNoteService(id, note);
         
+        if (!updatedNote) {
+            return res.status(404).json(NOT_FOUND);
+        }
 
-        res.status(200).json(updatedNote)
-
-
-
-
+        return res.status(200).json(updatedNote);
     } catch (error) {
-        next(error)
+        next(error);
     }
+};
 
-    //validate request data
+/**
+ * Search notes by keyword
+ */
+export const searchByKeyword = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const keyword = req.query.keyword as string;
+        const response: NoteTable[] | undefined = searchService(keyword);
 
-}
+        if (response === undefined) {
+            return res.status(404).json(NOT_FOUND);
+        }
 
-export const searchByKeyword=(req: Request, res: Response, next:NextFunction)=>{
-console.log("inside searchKeyword")
-    const keyword=req.query.keyword as string;
-    
-    const respones:NoteTable[]|undefined=searchService(keyword);
-    console.log(respones)
-    if(respones===undefined) return res.status(400).json(NOT_FOUND)
-        
-       return res.status(200).json({success:true,keyword:keyword,data:respones})
-
-
-
-
-
-}
+        return res.status(200).json({
+            success: true,
+            keyword: keyword,
+            data: response
+        });
+    } catch (error) {
+        next(error);
+    }
+};

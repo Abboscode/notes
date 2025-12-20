@@ -6,13 +6,11 @@ const DB_PATH = 'DATA.json';
 
 describe('Notes API Full Route Tests', () => {
     
-    // Reset the JSON file to a clean state before every test
-    // beforeEach(() => {
-    //     const seedData = [
-    //         { id: 1, title: "Initial Note", content: "Hello World", created_at: "...", updated_at: "..." }
-    //     ];
-    //     fs.writeFileSync(DB_PATH, JSON.stringify(seedData));
-    // });
+  //  Reset the JSON file to a clean state before every test
+    beforeEach(() => {
+        const seedData = fs.readFileSync(DB_PATH, 'utf8');
+        fs.writeFileSync('DATA_TEST.json', seedData);
+    });
 
 describe('GET /notes', () => {
     it('should return 200 and a paginated response object', async () => {
@@ -65,7 +63,7 @@ describe('GET /notes', () => {
     describe('PATCH notes/update/:id', () => {
         it('should return 200 and update the note in the file', async () => {
             const res = await request(app)
-                .patch('/notes/update/1')
+                .patch('/notes/update/4')
                 .send({ title: "Updated Title" });
             
             expect(res.statusCode).toBe(200);
@@ -81,7 +79,7 @@ describe('GET /notes', () => {
 
     describe('DELETE /notes/delete/:id', () => {
         it('should return 200 and remove the note from the file', async () => {
-            const res = await request(app).delete('/notes/delete/1');
+            const res = await request(app).delete('/notes/delete/4');
             expect(res.statusCode).toBe(200);
 
             // const fileData = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
