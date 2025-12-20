@@ -49,14 +49,22 @@ export const createNotes = (req: Request, res: Response, next: NextFunction) => 
 
     
 
-        const id: number = createNoteService(title, content)
+       
 
         // Basic check to see if body is coming through
         if (!title || !content) {
-            return res.status(400).json({ message: "Title and content are required" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Title and content are required" 
+            });
         }
 
-        res.status(201).json({ success: true, message: "note created", id })
+         const id: number = createNoteService(title, content)
+      return res.status(201).json({ 
+            success: true, 
+            message: "note created", 
+            id: id 
+        });
 
 
     } catch (error) {
@@ -87,6 +95,11 @@ export const deleteNotes = (req: Request, res: Response, next: NextFunction) => 
         }
 
         const deleted: boolean = deleteNoteService(id)
+        if (deleted) {
+        
+        res.status(200).json({message:"successuly deleted"})
+
+        }
 
     } catch (error) {
 
@@ -140,7 +153,7 @@ export const updateNote = (req: Request, res: Response, next: NextFunction) => {
         if (content !== undefined) note.content = content
 
         const updatedNote: NoteTable | undefined = updateNoteService(id, note)//applies all neccassary info changes too
-        if (updatedNote === undefined) return res.status(400).json(NOT_FOUND)
+        if (updatedNote === undefined) return res.status(404).json(NOT_FOUND)
         
 
         res.status(200).json(updatedNote)
@@ -164,7 +177,7 @@ console.log("inside searchKeyword")
     console.log(respones)
     if(respones===undefined) return res.status(400).json(NOT_FOUND)
         
-        res.status(200).json({success:true,keyword:keyword,data:respones})
+       return res.status(200).json({success:true,keyword:keyword,data:respones})
 
 
 
