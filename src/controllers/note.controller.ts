@@ -74,7 +74,7 @@ export const deleteNotes =catchAsync(async (req: Request, res: Response, next: N
         const deleted: boolean = await deleteNoteService(id);
 
         if (deleted) {
-            return res.status(200).json({ message: "Successfully deleted" });
+            return res.status(200).json({ status:true,message: `${idStr} succesfully deleted` , id:idStr});
         } else {
             return next(new AppError(`Delation of ${idStr}  failed`, 404,"Delation fail"))
         }
@@ -128,7 +128,7 @@ export const updateNote = catchAsync(async(req: Request, res: Response, next: Ne
             return    next(new AppError(`Could not find a note with`,404 ,"Not found"));;
         }
 
-        return res.status(200).json(updatedNote);
+        return res.status(200).json( {success: true,message:"Note updated successfully",data:updatedNote});
    
 });
 
