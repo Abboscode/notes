@@ -33,7 +33,7 @@ export const validateNoteMiddlewareOptional = (keys: string[]) => {
 
 
         if (errors.length > 0) {
-          return  next(new AppError(errors.join(','), 400,"Validation Failure"))
+           next(new AppError(errors.join(','), 400,"Validation Failure"))
 
         }
         next()
