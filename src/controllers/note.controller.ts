@@ -11,23 +11,20 @@ import type { NoteTable } from "../models/note.js";
 import { isIdNumber } from "../utils/utils.js";
 import AppError from "../utils/app.error.js";
 import { catchAsync } from "../utils/utils.js";
-const INVALID_ID_MESSAGE = { message: "Invalid ID" };
-const NOT_FOUND = { message: "Note not found" };
+
 
 /**
  * Fetch all notes with pagination
  */
 export const getNotes =catchAsync (async (req: Request, res: Response, next: NextFunction) => {
-    try {
+
         const page = parseInt(req.query.page as string || "1");
         const limit = parseInt(req.query.limit as string || "10");
         
         const data: NoteTable[] | undefined = await getNotesByPaginationService(page, limit);
         
         if (!data) {
-            return res.status(400).json({ 
-                message: "Bad response from server: no data fetched for the given queries" 
-            });
+            return next(new AppError("Bad response from server: no data fetched for the given queries",400,"No data" )) ;
         }
 
         return res.status(200).json({
@@ -36,9 +33,7 @@ export const getNotes =catchAsync (async (req: Request, res: Response, next: Nex
             totalNotes: data.length,
             data: data
         });
-    } catch (error) {
-        next(error);
-    }
+  
 });
 
 /**
@@ -47,13 +42,13 @@ export const getNotes =catchAsync (async (req: Request, res: Response, next: Nex
 export const createNotes =catchAsync( async (req: Request, res: Response, next: NextFunction) => {
     
         const { title, content } = req.body;
-console.log("before id")
+
         if (!title || !content) {
            return next (new AppError("Title and content are required", 400,"Missing fields"))
         }
 
         const id: number = await createNoteService(title, content) ;
-        console.log("after id")
+
         
     res.status(201).json({
             success: true,
@@ -67,12 +62,12 @@ console.log("before id")
 /**
  * Delete a note by ID
  */
-export const deleteNotes = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const deleteNotes =catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
         const idStr = req.params.id;
 
         if (!isIdNumber(idStr)) {
-            return res.status(400).json(INVALID_ID_MESSAGE);
+            return next(new AppError("Invalid: ID must be a number", 400,"Invalid ID format"))           
         }
 
         const id = parseInt(idStr||'-1');
@@ -81,49 +76,45 @@ export const deleteNotes = async (req: Request, res: Response, next: NextFunctio
         if (deleted) {
             return res.status(200).json({ message: "Successfully deleted" });
         } else {
-            return res.status(404).json(NOT_FOUND);
+            return next(new AppError(`Delation of ${idStr}  failed`, 404,"Delation fail"))
         }
-    } catch (error) {
-        next(error);
-    }
-};
+  
+});
 
 /**
  * Get a single note by ID
  */
-export const getNoteById = (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const getNoteById = catchAsync((req: Request, res: Response, next: NextFunction) => {
+
         if (!isIdNumber(req.params.id)) {
-            return res.status(400).json(INVALID_ID_MESSAGE);
+            return    next(new AppError(`${req.params} is not valid ID`,400 ,"Invalid ID"));
         }
 
         const id = parseInt(req.params.id||'-1');
         const note: NoteTable | undefined = getNoteByIdService(id);
 
         if (!note) {
-            return res.status(404).json(NOT_FOUND);
+            return    next(new AppError(`Could not find a note with`,404 ,"Not found"));
         }
 
-        return res.json(note);
-    } catch (error) {
-        next(error);
-    }
-};
+        return res.status(200).json(note);
+    
+});
 
 /**
  * Update an existing note
  */
-export const updateNote = async(req: Request, res: Response, next: NextFunction) => {
-    try {
+export const updateNote = catchAsync(async(req: Request, res: Response, next: NextFunction) => {
+
         if (!isIdNumber(req.params.id)) {
-            return res.status(400).json(INVALID_ID_MESSAGE);
+            return   next(new AppError(`Could not find a note with`,404 ,"Not found"));
         }
 
         const id = Number(req.params.id);
         const note = getNoteByIdService(id);
 
         if (!note) {
-            return res.status(404).json(NOT_FOUND);
+            return    next(new AppError(`Could not find a note with`,404 ,"Not found"));;
         }
 
         const { title, content } = req.body;
@@ -134,25 +125,23 @@ export const updateNote = async(req: Request, res: Response, next: NextFunction)
         const updatedNote = await updateNoteService(id, note);
         
         if (!updatedNote) {
-            return res.status(404).json(NOT_FOUND);
+            return    next(new AppError(`Could not find a note with`,404 ,"Not found"));;
         }
 
         return res.status(200).json(updatedNote);
-    } catch (error) {
-        next(error);
-    }
-};
+   
+});
 
 /**
  * Search notes by keyword
  */
-export const searchByKeyword = (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const searchByKeyword = catchAsync((req: Request, res: Response, next: NextFunction) => {
+
         const keyword = req.query.keyword as string;
         const response: NoteTable[] | undefined = searchService(keyword);
 
         if (response === undefined) {
-            return res.status(404).json(NOT_FOUND);
+            return    next(new AppError(`Could not find a note with ${keyword}`,404 ,"Not found"));
         }
 
         return res.status(200).json({
@@ -160,10 +149,8 @@ export const searchByKeyword = (req: Request, res: Response, next: NextFunction)
             keyword: keyword,
             data: response
         });
-    } catch (error) {
-        next(error);
-    }
-};
+   
+});
 
 // handles all non exisiting routes
 export const notMatching=(req:Request,res:Response,next:NextFunction)=>{
