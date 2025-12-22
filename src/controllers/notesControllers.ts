@@ -9,6 +9,7 @@ import {
 } from "../services/noteServices.js";
 import type { NoteTable } from "../models/note.js";
 import { isIdNumber } from "../utils.js";
+import AppError from "../models/AppError.js";
 
 const INVALID_ID_MESSAGE = { message: "Invalid ID" };
 const NOT_FOUND = { message: "Note not found" };
@@ -167,3 +168,12 @@ export const searchByKeyword = (req: Request, res: Response, next: NextFunction)
         next(error);
     }
 };
+
+// handles all non exisiting routes
+export const notMatching=(req:Request,res:Response,next:NextFunction)=>{
+
+
+next(new AppError(`URL does not match any route ${req.originalUrl}`,404,'fail'))
+
+
+}

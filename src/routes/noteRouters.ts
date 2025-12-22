@@ -5,7 +5,8 @@ import {
     createNotes, 
     getNoteById, 
     deleteNotes, 
-    updateNote 
+    updateNote, 
+    notMatching
 } from "../controllers/notesControllers.js";
 import { 
     validateNoteMiddlewareOptional, 
@@ -14,10 +15,7 @@ import {
 
 const router = Router();
 
-/**
- * Note: Move specific paths (like /search) ABOVE parameterized paths (like /:id)
- * to prevent the ID route from intercepting the search request.
- */
+
 
 // 1. Search notes (e.g., /notes/search?keyword=test)
 router.get('/search', searchByKeyword);
@@ -44,5 +42,8 @@ router.patch(
 
 // 6. Delete note
 router.delete("/:id", deleteNotes);
+
+// Use '*' or a string path to catch all undefined routes
+router.use(notMatching);
 
 export default router;

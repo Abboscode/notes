@@ -1,6 +1,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import validator from "validator"
+import AppError from '../models/AppError.js';
 
 
 
@@ -32,9 +33,10 @@ export const validateNoteMiddlewareOptional = (keys: string[]) => {
 
 
         if (errors.length > 0) {
-            return res.status(400).json({ success: false, message: "validation fail", errors });
+          return  next(new AppError(errors.join(','), 400,"Validation Failure"))
+
         }
-        next()
+        
 
     }
 
@@ -70,15 +72,11 @@ export const validateNoteMiddlewareStrict = (keys: string[]) => {
 
 
         if (errors.length > 0) {
-            console.log("debug insde validatemiddleware strict")
-            return res.status(400).json(
-                {
-                    success: false,
-                    message: "validation fail",
-                    errors
-                });
+         
+
+            next(new AppError(errors.join(','), 400,"Validation Failure"))
         }
-        next()
+    
 
     }
 
