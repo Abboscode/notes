@@ -1,5 +1,5 @@
 import type { RequestHandler } from 'express';
-import type{  NoteTable } from './models/note.js';
+import type{  NoteTable } from '../models/note.js';
 
 
 export const findById  =(id: number, notes: NoteTable[]):NoteTable|undefined =>{

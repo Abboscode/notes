@@ -3,7 +3,7 @@ import {promises as  fs}  from 'fs';
 import type { NoteTable } from "../models/note.js";
 
 
-import AppError from "../models/app.error.js";
+import AppError from "../utils/app.error.js";
 
 const FILE_PATH = 'DATA_TEST.json';
 

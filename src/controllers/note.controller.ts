@@ -8,9 +8,9 @@ import {
     getNotesByPaginationService 
 } from "../services/notes.services.js";
 import type { NoteTable } from "../models/note.js";
-import { isIdNumber } from "../utils.js";
-import AppError from "../models/app.error.js";
-import { catchAsync } from "../utils.js";
+import { isIdNumber } from "../utils/utils.js";
+import AppError from "../utils/app.error.js";
+import { catchAsync } from "../utils/utils.js";
 const INVALID_ID_MESSAGE = { message: "Invalid ID" };
 const NOT_FOUND = { message: "Note not found" };
 
