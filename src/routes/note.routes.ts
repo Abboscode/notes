@@ -5,7 +5,7 @@ import {
     createNotes, 
     getNoteById, 
     deleteNotes, 
-    updateNote, 
+    updateNote, notMatching
     
 } from "../controllers/note.controller.js";
 import { 
@@ -44,6 +44,6 @@ router.patch(
 router.delete("/:id", deleteNotes);
 
 // Use '*' or a string path to catch all undefined routes
-//router.use(notMatching);
+router.use(notMatching);
 
 export default router;
