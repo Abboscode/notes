@@ -1,15 +1,15 @@
 import request from 'supertest';
 import app from './app.js'; // Your express app instance
-import fs from 'fs';
+import { promises as fs} from 'fs';
 
 const DB_PATH = 'DATA.json';
 
 describe('Notes API Full Route Tests', () => {
     
   //  Reset the JSON file to a clean state before every test
-    beforeEach(() => {
-        const seedData = fs.readFileSync(DB_PATH, 'utf8');
-        fs.writeFileSync('DATA_TEST.json', seedData);
+    beforeEach(async () => {
+        const seedData = await fs.readFile(DB_PATH, 'utf8');
+        await fs.writeFile('DATA_TEST.json', seedData);
     });
 
 describe('GET /notes', () => {

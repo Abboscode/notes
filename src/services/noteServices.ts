@@ -1,28 +1,37 @@
-import fs from 'fs';
+import { promises } from "fs";
+import {promises as  fs}  from 'fs';
 import type { NoteTable } from "../models/note.js";
-import { findById } from "../utils.js";
+import { catchAsync, findById } from "../utils.js";
+
+import AppError from "../models/AppError.js";
 
 const FILE_PATH = 'DATA_TEST.json';
 
 /**
+ * Helper to try catch from the JSON file
+ */
+
+
+
+/**
  * Helper to read notes from the JSON file
  */
-const readDB = (): NoteTable[] => {
-    try {
-        const data = fs.readFileSync(FILE_PATH, 'utf8');
+const readDB =async ():Promise< NoteTable[]> => {
+   
+        const data = await promises.readFile(FILE_PATH,'utf8')
+        console.log(data)
         return JSON.parse(data);
-    } catch (error) {
-        console.error("Error reading database:", error);
-        return [];
+
+    
     }
-};
+;
 
 /**
  * Helper to write notes to the JSON file
  */
-const writeDB = (data: NoteTable[]): void => {
+const writeDB = async (data: NoteTable[]):Promise<void> => {
     try {
-        fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2));
+        fs.writeFile(FILE_PATH, JSON.stringify(data, null, 2));
     } catch (error) {
         console.error("Error writing to database:", error);
         throw new Error("Disk Write Error");
@@ -30,15 +39,16 @@ const writeDB = (data: NoteTable[]): void => {
 };
 
 // Initial data load
-let notes: NoteTable[] = readDB()||[];
+let notes: NoteTable[] = await readDB()
 
-export const createNoteService = (title: string, content: string): number => {
-    try {
-        const currentNotes:NoteTable[] = readDB()||[];
+export const createNoteService = async (title: string, content: string):Promise<number> => {
+        console.log("inisde createNodeService")
+        const currentNotes:NoteTable[] = await readDB();
+       
         const lastId = currentNotes.length > 0 ? currentNotes[currentNotes.length - 1]?.id : 0;
-        
+        const newId=(lastId??0 )+1
         const newNote: NoteTable = {
-            id: lastId??0  + 1,
+            id: newId,
             title,
             content,
             created_at: new Date().toISOString(),
@@ -50,20 +60,21 @@ export const createNoteService = (title: string, content: string): number => {
         
         // Update local cache
         notes = currentNotes;
-        return newNote.id;
-    } catch (error) {
-        console.error("Cannot create note.");
-        throw error;
-    }
+        return newId;
+  
+      
+        
+    
 };
 
-export const getAllNotesService = (): NoteTable[] => {
-    return readDB();
+export const getAllNotesService =async ():Promise<NoteTable[]> => {
+    const data:NoteTable[] = await readDB() as NoteTable[]
+    return data
 };
 
-export const deleteNoteService = (id: number): boolean => {
+export const deleteNoteService = async(id: number): Promise<boolean> => {
     try {
-        const currentNotes = readDB();
+        const currentNotes = await readDB();
         const initialLength = currentNotes.length;
         const filteredNotes = currentNotes.filter(note => note.id !== id);
 
@@ -71,7 +82,7 @@ export const deleteNoteService = (id: number): boolean => {
             return false; // Note wasn't found
         }
 
-        writeDB(filteredNotes);
+       await writeDB(filteredNotes);
         notes = filteredNotes; // Sync local cache
         return true;
     } catch (error) {
@@ -84,12 +95,14 @@ export const getNoteByIdService = (id: number): NoteTable | undefined => {
     return notes.find(note => note.id === id);
 };
 
-export const updateNoteService = (id: number, modifiedData: Partial<NoteTable>): NoteTable | undefined => {
-    try {
-        const currentNotes = readDB();
-        const index = currentNotes.findIndex(note => note.id === id);
+export const updateNoteService = async(id: number, modifiedData: Partial<NoteTable>):Promise< NoteTable>  => {
+    
+        const currentNotes = await readDB();
+        const index = currentNotes.findIndex(note=> note.id===id)
 
-        if (index === -1) return undefined;
+
+        if (index === -1) throw new AppError(`Note with id ${id} not found`,404,"Invalid ID");
+
 
         currentNotes[index] = {
             ...currentNotes[index],
@@ -99,16 +112,16 @@ export const updateNoteService = (id: number, modifiedData: Partial<NoteTable>):
 
         writeDB(currentNotes);
         notes = currentNotes; // Sync local cache
-        return notes[index];
-    } catch (error) {
-        throw error;
-    }
+
+        return currentNotes[index];
+   
 };
 
-export const getNotesByPaginationService = (page: number, limit: number): NoteTable[] => {
+export const getNotesByPaginationService = async(page: number, limit: number):Promise< NoteTable[]> => {
     try {
+        notes=await readDB() as NoteTable[]; // Read from the local cache or database)
         const skip = (page - 1) * limit;
-        return notes.slice(skip, skip + limit);
+        return notes.slice(skip, skip + limit) as NoteTable[] ; 
     } catch (err) {
         console.error("Pagination Error:", err);
         throw err;

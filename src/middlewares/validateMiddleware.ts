@@ -36,6 +36,7 @@ export const validateNoteMiddlewareOptional = (keys: string[]) => {
           return  next(new AppError(errors.join(','), 400,"Validation Failure"))
 
         }
+        next()
         
 
     }
@@ -77,7 +78,7 @@ export const validateNoteMiddlewareStrict = (keys: string[]) => {
             next(new AppError(errors.join(','), 400,"Validation Failure"))
         }
     
-
+next()
     }
 
 }

@@ -7,14 +7,14 @@ if(err instanceof AppError){
   err.status=err.status||'error'
   err.statusCode=err.statusCode||500
 
-  res.status(err.statusCode).json({
+ return res.status(err.statusCode).json({
     status:err.status,
     message:err.message,
 
   })
 }
 
-res.status(500).json({
+return res.status(500).json({
   status:'error',
   message:'Bad Request'
 })

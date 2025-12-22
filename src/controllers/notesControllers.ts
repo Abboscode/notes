@@ -10,19 +10,19 @@ import {
 import type { NoteTable } from "../models/note.js";
 import { isIdNumber } from "../utils.js";
 import AppError from "../models/AppError.js";
-
+import { catchAsync } from "../utils.js";
 const INVALID_ID_MESSAGE = { message: "Invalid ID" };
 const NOT_FOUND = { message: "Note not found" };
 
 /**
  * Fetch all notes with pagination
  */
-export const getNotes = (req: Request, res: Response, next: NextFunction) => {
+export const getNotes =catchAsync (async (req: Request, res: Response, next: NextFunction) => {
     try {
         const page = parseInt(req.query.page as string || "1");
         const limit = parseInt(req.query.limit as string || "10");
         
-        const data: NoteTable[] | undefined = getNotesByPaginationService(page, limit);
+        const data: NoteTable[] | undefined = await getNotesByPaginationService(page, limit);
         
         if (!data) {
             return res.status(400).json({ 
@@ -39,39 +39,35 @@ export const getNotes = (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         next(error);
     }
-};
+});
 
 /**
  * Create a new note
  */
-export const createNotes = (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const createNotes =catchAsync( async (req: Request, res: Response, next: NextFunction) => {
+    
         const { title, content } = req.body;
-
+console.log("before id")
         if (!title || !content) {
-            return res.status(400).json({
-                success: false,
-                message: "Title and content are required"
-            });
+           return next (new AppError("Title and content are required", 400,"Missing fields"))
         }
 
-        const id: number = createNoteService(title, content);
+        const id: number = await createNoteService(title, content) ;
+        console.log("after id")
         
-        return res.status(201).json({
+    res.status(201).json({
             success: true,
             message: "Note created",
             id: id
         });
-    } catch (error) {
-        console.error("Cannot create note:", error);
-        next(error);
-    }
-};
+   
+    
+});
 
 /**
  * Delete a note by ID
  */
-export const deleteNotes = (req: Request, res: Response, next: NextFunction) => {
+export const deleteNotes = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const idStr = req.params.id;
 
@@ -80,7 +76,7 @@ export const deleteNotes = (req: Request, res: Response, next: NextFunction) => 
         }
 
         const id = parseInt(idStr||'-1');
-        const deleted: boolean = deleteNoteService(id);
+        const deleted: boolean = await deleteNoteService(id);
 
         if (deleted) {
             return res.status(200).json({ message: "Successfully deleted" });
@@ -117,7 +113,7 @@ export const getNoteById = (req: Request, res: Response, next: NextFunction) => 
 /**
  * Update an existing note
  */
-export const updateNote = (req: Request, res: Response, next: NextFunction) => {
+export const updateNote = async(req: Request, res: Response, next: NextFunction) => {
     try {
         if (!isIdNumber(req.params.id)) {
             return res.status(400).json(INVALID_ID_MESSAGE);
@@ -135,7 +131,7 @@ export const updateNote = (req: Request, res: Response, next: NextFunction) => {
         if (title !== undefined) note.title = title;
         if (content !== undefined) note.content = content;
 
-        const updatedNote = updateNoteService(id, note);
+        const updatedNote = await updateNoteService(id, note);
         
         if (!updatedNote) {
             return res.status(404).json(NOT_FOUND);
