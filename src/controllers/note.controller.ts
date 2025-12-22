@@ -6,7 +6,7 @@ import {
     getNoteByIdService, 
     updateNoteService, 
     getNotesByPaginationService 
-} from "../services/notes.services.js";
+} from "../services/note.service.js";
 import type { NoteTable } from "../models/note.js";
 import { isIdNumber } from "../utils/utils.js";
 import AppError from "../utils/app.error.js";
