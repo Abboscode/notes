@@ -6,10 +6,10 @@ import {
     getNoteByIdService, 
     updateNoteService, 
     getNotesByPaginationService 
-} from "../services/noteServices.js";
+} from "../services/notes.services.js";
 import type { NoteTable } from "../models/note.js";
 import { isIdNumber } from "../utils.js";
-import AppError from "../models/AppError.js";
+import AppError from "../models/app.error.js";
 import { catchAsync } from "../utils.js";
 const INVALID_ID_MESSAGE = { message: "Invalid ID" };
 const NOT_FOUND = { message: "Note not found" };

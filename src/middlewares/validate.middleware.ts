@@ -1,7 +1,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import validator from "validator"
-import AppError from '../models/AppError.js';
+import AppError from '../models/app.error.js';
 
 
 

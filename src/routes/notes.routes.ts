@@ -6,12 +6,12 @@ import {
     getNoteById, 
     deleteNotes, 
     updateNote, 
-    notMatching
-} from "../controllers/notesControllers.js";
+    
+} from "../controllers/notes.controller.js";
 import { 
     validateNoteMiddlewareOptional, 
     validateNoteMiddlewareStrict 
-} from "../middlewares/validateMiddleware.js";
+} from "../middlewares/validate.middleware.js";
 
 const router = Router();
 

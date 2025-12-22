@@ -1,9 +1,9 @@
 import { promises } from "fs";
 import {promises as  fs}  from 'fs';
 import type { NoteTable } from "../models/note.js";
-import { catchAsync, findById } from "../utils.js";
 
-import AppError from "../models/AppError.js";
+
+import AppError from "../models/app.error.js";
 
 const FILE_PATH = 'DATA_TEST.json';
 
