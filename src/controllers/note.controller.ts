@@ -74,7 +74,7 @@ export const deleteNotes =catchAsync(async (req: Request, res: Response, next: N
         const deleted: boolean = await deleteNoteService(id);
 
         if (deleted) {
-            return res.status(200).json({ status:true,message: `${idStr} succesfully deleted` , id:idStr});
+            return res.status(200).json({ success:deleted,message: `${idStr} succesfully deleted` , id:idStr});
         } else {
             return next(new AppError(`Delation of ${idStr}  failed`, 404,"Delation fail"))
         }

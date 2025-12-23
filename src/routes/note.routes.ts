@@ -1,49 +1,83 @@
 import { Router } from "express";
-import { 
-    searchByKeyword, 
-    getNotes, 
-    createNotes, 
-    getNoteById, 
-    deleteNotes, 
-    updateNote, notMatching
-    
+
+
+import {
+  searchByKeyword,
+  getNotes,
+  createNotes,
+  getNoteById,
+  deleteNotes,
+  updateNote,
+  notMatching,
 } from "../controllers/note.controller.js";
-import { 
-    validateNoteMiddlewareOptional, 
-    validateNoteMiddlewareStrict 
+
+import {
+  validateNoteMiddlewareOptional,
+  validateNoteMiddlewareStrict,
 } from "../middlewares/validate.middleware.js";
 
-const router = Router();
+/**
+ * Notes Router
+ * Handles all /notes routes
+ */
+const router: Router = Router();
 
+/**
+ * @route   GET /notes/search
+ * @desc    Search notes by keyword
+ * @query   keyword {string}
+ * @access  Public
+ */
+router.get("/search", searchByKeyword);
 
-
-// 1. Search notes (e.g., /notes/search?keyword=test)
-router.get('/search', searchByKeyword);
-
-// 2. Get all notes with pagination (e.g., /notes?page=1&limit=10)
-router.get("/", getNotes);
-
-// 3. Get specific note by ID
-router.get("/:id", getNoteById);
-
-// 4. Create note
-router.post(
-    '/', // Standard REST: POST to the base collection
-    validateNoteMiddlewareStrict(["title", "content"]), 
+/**
+ * @route   GET /notes
+ * @desc    Get all notes with pagination
+ * @query   page {number}
+ * @query   limit {number}
+ * @access  Public
+ *
+ * @route   POST /notes
+ * @desc    Create a new note
+ * @body    title {string}
+ * @body    content {string}
+ * @access  Public
+ */
+router
+  .route("/")
+  .get(getNotes)
+  .post(
+    validateNoteMiddlewareStrict(["title", "content"]),
     createNotes
-);
+  );
 
-// 5. Update note
-router.patch(
-    "/:id", // Standard REST: PATCH to the specific resource ID
-    validateNoteMiddlewareOptional(["title", "content"]), 
+/**
+ * @route   GET /notes/:id
+ * @desc    Get a note by ID
+ * @param   id {string}
+ *
+ * @route   PATCH /notes/:id
+ * @desc    Update a note partially
+ * @param   id {string}
+ * @body    title? {string}
+ * @body    content? {string}
+ *
+ * @route   DELETE /notes/:id
+ * @desc    Delete a note by ID
+ * @param   id {string}
+ */
+router
+  .route("/:id")
+  .get(getNoteById)
+  .patch(
+    validateNoteMiddlewareOptional(["title", "content"]),
     updateNote
-);
+  )
+  .delete(deleteNotes);
 
-// 6. Delete note
-router.delete("/:id", deleteNotes);
-
-// Use '*' or a string path to catch all undefined routes
+/**
+ * Catch all undefined routes
+ */
 router.use(notMatching);
 
 export default router;
