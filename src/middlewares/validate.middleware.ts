@@ -1,80 +1,55 @@
+// middleware/validate.middleware.ts
 import type { Request, Response, NextFunction } from "express";
 import validator from "validator";
 import AppError from "../utils/app.error.js";
 
-type Body = Record<string, unknown>;
-
-const validateStringField = (
-  key: string,
-  value: unknown,
-  required: boolean,
-  errors: string[]
-): void => {
-  if (value === undefined) {
-    if (required) errors.push(`${key} is required`);
-    return;
-  }
-
-  if (typeof value !== "string") {
-    errors.push(`Invalid type for ${key}`);
-    return;
-  }
-
-  if (validator.isEmpty(value, { ignore_whitespace: true })) {
-    errors.push(`${key} is empty`);
-  }
+type ValidationOptions = {
+    isRequired?: boolean;
 };
 
-export const validateNoteMiddlewareStrict =
-  (keys: string[]) =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    if (!req.body || typeof req.body !== "object") {
-      return next(
-        new AppError("Request body is missing", 400, "Validation Failure")
-      );
-    }
-    
+// Generic validation factory
+export const validateBody = (fields: string[], options: ValidationOptions = {}) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const { isRequired = true } = options;
 
-    const body = req.body as Body;
-    const errors: string[] = [];
+        if (!req.body || typeof req.body !== "object") {
+             return next(new AppError("Request body is missing or invalid", 400, "Validation Failure"));
+        }
 
-    
+        const errors: string[] = [];
+        const body = req.body as Record<string, unknown>;
 
-    keys.forEach((key) =>
-      validateStringField(key, body[key], true, errors)
-    );
+        fields.forEach((field) => {
+            const value = body[field];
 
-    if (errors.length > 0) {
-      return next(
-        new AppError(errors.join(", "), 400, "Validation Failure")
-      );
-    }
+            // 1. Check existence
+            if (value === undefined) {
+                if (isRequired) {
+                    errors.push(`${field} is required`);
+                }
+                return; // Skip further checks if missing (and strictly not required)
+            }
 
-    next();
-  };
+            // 2. Check Type
+            if (typeof value !== "string") {
+                errors.push(`${field} must be a string`);
+                return;
+            }
 
-export const validateNoteMiddlewareOptional =
-  (keys: string[]) =>
-  (req: Request, res: Response, next: NextFunction): void => {
-    
-    if (!req.body || typeof req.body !== "object") {
-      return next(
-         new AppError("Request body is missing", 400, "Validation Failure")
-      );
-    }
+            // 3. Check Empty (only if it exists)
+            if (validator.isEmpty(value, { ignore_whitespace: true })) {
+                errors.push(`${field} cannot be empty`);
+            }
+        });
 
-    const body = req.body as Body;
-    const errors: string[] = [];
+        if (errors.length > 0) {
+            return next(new AppError(errors.join("; "), 400, "Validation Failure"));
+        }
 
-    keys.forEach((key) =>
-      validateStringField(key, body[key], false, errors)
-    );
+        next();
+    };
+};
 
-    if (errors.length > 0) {
-      return next(
-        new AppError(errors.join(", "), 400, "Validation Failure")
-      );
-    }
-
-    next();
-  };
+// Usage examples for your routes:
+// router.post('/', validateBody(['title', 'content'], { isRequired: true }), controller.createNotes);
+// router.patch('/:id', validateBody(['title', 'content'], { isRequired: false }), controller.updateNote);

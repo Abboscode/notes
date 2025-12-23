@@ -22,9 +22,10 @@ describe("Notes API – Full Route Tests", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
+        status:expect.any(String),
         page: expect.any(Number),
         limit: expect.any(Number),
-        totalNotes: expect.any(Number),
+        results: expect.any(Number),
       });
       expect(Array.isArray(res.body.data)).toBe(true);
     });
@@ -45,8 +46,8 @@ describe("Notes API – Full Route Tests", () => {
         .send({ title: "New", content: "Content" });
 
       expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
-      expect(res.body.id).toEqual(expect.any(Number));
+      expect(res.body.message).toBe("Note created successfully");
+      expect(res.body.data).toEqual(expect.any(Number));
     });
 
     it("fails validation when title is missing", async () => {
@@ -66,7 +67,7 @@ describe("Notes API – Full Route Tests", () => {
         .send({ title: "Updated Title" });
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.body.success).toBe("success");
     });
 
     it("returns 404 for non-existent note", async () => {
@@ -82,8 +83,8 @@ describe("Notes API – Full Route Tests", () => {
     it("deletes a note successfully", async () => {
       const res = await request(app).delete("/notes/6");
 
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.status).toBe(200)
+      expect(res.body.message).toStrictEqual(expect.any(String));
     });
   });
 

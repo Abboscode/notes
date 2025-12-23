@@ -1,6 +1,5 @@
 import { Router } from "express";
 
-
 import {
   searchByKeyword,
   getNotes,
@@ -8,13 +7,9 @@ import {
   getNoteById,
   deleteNotes,
   updateNote,
-  notMatching,
 } from "../controllers/note.controller.js";
 
-import {
-  validateNoteMiddlewareOptional,
-  validateNoteMiddlewareStrict,
-} from "../middlewares/validate.middleware.js";
+import { validateBody } from "../middlewares/validate.middleware.js";
 
 /**
  * Notes Router
@@ -27,57 +22,47 @@ const router: Router = Router();
  * @desc    Search notes by keyword
  * @query   keyword {string}
  * @access  Public
+ * * ⚠️ IMPORTANT: This must be defined BEFORE /:id
+ * Otherwise "search" will be caught as an :id parameter
  */
 router.get("/search", searchByKeyword);
 
 /**
  * @route   GET /notes
  * @desc    Get all notes with pagination
- * @query   page {number}
- * @query   limit {number}
  * @access  Public
  *
  * @route   POST /notes
  * @desc    Create a new note
- * @body    title {string}
- * @body    content {string}
  * @access  Public
  */
 router
   .route("/")
   .get(getNotes)
   .post(
-    validateNoteMiddlewareStrict(["title", "content"]),
+    // strict: true (all fields required)
+    validateBody(["title", "content"], { isRequired: true }), 
     createNotes
   );
 
 /**
  * @route   GET /notes/:id
  * @desc    Get a note by ID
- * @param   id {string}
  *
  * @route   PATCH /notes/:id
  * @desc    Update a note partially
- * @param   id {string}
- * @body    title? {string}
- * @body    content? {string}
  *
  * @route   DELETE /notes/:id
  * @desc    Delete a note by ID
- * @param   id {string}
  */
 router
   .route("/:id")
   .get(getNoteById)
   .patch(
-    validateNoteMiddlewareOptional(["title", "content"]),
+    // strict: false (fields are optional, but if present, must be valid)
+    validateBody(["title", "content"], { isRequired: false }), 
     updateNote
   )
   .delete(deleteNotes);
-
-/**
- * Catch all undefined routes
- */
-router.use(notMatching);
 
 export default router;
