@@ -33,9 +33,12 @@ export const validateNoteMiddlewareStrict =
         new AppError("Request body is missing", 400, "Validation Failure")
       );
     }
+    
 
     const body = req.body as Body;
     const errors: string[] = [];
+
+    
 
     keys.forEach((key) =>
       validateStringField(key, body[key], true, errors)

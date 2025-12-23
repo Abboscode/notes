@@ -4,6 +4,7 @@ import type { NoteTable } from "../models/note.js";
 
 
 import AppError from "../utils/app.error.js";
+import { catchAsync } from "../utils/utils.js";
 
 const FILE_PATH = 'DATA_TEST.json';
 
@@ -19,7 +20,7 @@ const FILE_PATH = 'DATA_TEST.json';
 const readDB =async ():Promise< NoteTable[]> => {
    
         const data = await promises.readFile(FILE_PATH,'utf8')
-        console.log(data)
+     
         return JSON.parse(data);
 
     
@@ -38,14 +39,36 @@ const writeDB = async (data: NoteTable[]):Promise<void> => {
     }
 };
 
+/**
+ * Convert to map
+ * 
+ * 
+ */
+
+const toMap = (currentNotes: NoteTable[]):Map<number, NoteTable> =>{
+
+    const mapNotes=new Map<number,NoteTable>()
+        currentNotes.forEach(note=>{mapNotes.set(note.id, {...note} )})
+    return mapNotes;
+
+}
+
 // Initial data load
-let notes: NoteTable[] = await readDB()
+let noteCache: NoteTable[] = await readDB()
 
 export const createNoteService = async (title: string, content: string):Promise<number> => {
-        console.log("inisde createNodeService")
-        const currentNotes:NoteTable[] = await readDB();
+  
+    try{    
+    const currentNotes:NoteTable[] = noteCache;
+        const lastNote:NoteTable|undefined= currentNotes[currentNotes.length-1];
+        
+        const lastId:number|undefined=lastNote?.id
+
+    
+        
+
        
-        const lastId = currentNotes.length > 0 ? currentNotes[currentNotes.length - 1]?.id : 0;
+       
         const newId=(lastId??0 )+1
         const newNote: NoteTable = {
             id: newId,
@@ -54,14 +77,22 @@ export const createNoteService = async (title: string, content: string):Promise<
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
-
+        
+        if(lastNote)  currentNotes.push(lastNote)
+        
         currentNotes.push(newNote);
         writeDB(currentNotes);
         
         // Update local cache
-        notes = currentNotes;
+        noteCache = currentNotes;
         return newId;
-  
+}catch(err){
+throw new AppError("Can not create note ",500,"error in service")
+
+
+
+
+}
       
         
     
