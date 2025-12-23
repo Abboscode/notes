@@ -91,7 +91,7 @@ export const getNoteById = catchAsync((req: Request, res: Response, next: NextFu
         }
 
         const id = parseInt(req.params.id||'-1');
-        const note: NoteTable | undefined = getNoteByIdService(id);
+        const note: NoteTable | boolean = getNoteByIdService(id);
 
         if (!note) {
             return    next(new AppError(`Could not find a note with`,404 ,"Not found"));
@@ -111,7 +111,7 @@ export const updateNote = catchAsync(async(req: Request, res: Response, next: Ne
         }
 
         const id = Number(req.params.id);
-        const note = getNoteByIdService(id);
+        const note:NoteTable = getNoteByIdService(id) as NoteTable;
 
         if (!note) {
             return    next(new AppError(`Could not find a note with`,404 ,"Not found"));;

@@ -1,9 +1,7 @@
-import { CANCELLED } from "node:dns";
-
 export class noteManager<T extends number,D> {
     
-    cache:Map<T,D>;
-    lastId:T;
+   private cache:Map<T,D>;
+   private lastId:T;
      private increment:(id:T)=>T
     constructor();
     constructor(lastId?:T,fn?:(id:T)=>T);
@@ -14,7 +12,13 @@ export class noteManager<T extends number,D> {
         this.increment=fn??((id:T)=>(id+1) as T)
 }
 
+loadData(data:Map<T,D>){
+this.cache=data
+//SET LAST ID FROM LOADED DATA
+    this.lastId=data.keys().toArray().pop() as T
 
+
+}
 create(data:D):T{
     this.lastId=this.increment(this.lastId)
 
@@ -22,16 +26,43 @@ create(data:D):T{
     return this.lastId
 
 }
+delete(id:T):boolean{
+    if(!this.cache.has(id)) return false
+    
+    this.cache.delete(id);
+return true
+    
+    
+    }
 
 update(id:T,data:D):boolean{
     if(!this.cache.has(id)) return false
     
     this.cache.set(id,data)
-    return true
-
-}
+    return true;
 
 
 }
+getAll():D[]{
+    return Array.from(this.cache.values())
 
 
+}
+
+get(id:T):D|boolean{
+
+
+return this.cache.get(id)||false
+
+
+
+}
+getLastKey():T{
+
+
+    return this.lastId;
+}
+
+offloadData():D[]{
+    return Array.from(this.cache.values())
+}}

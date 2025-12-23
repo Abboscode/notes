@@ -1,10 +1,11 @@
 import { promises } from "fs";
 import {promises as  fs}  from 'fs';
 import type { NoteTable } from "../models/note.js";
-
+import { noteManager } from "../utils/note.manager.js";
+import { InverseIndex } from "../utils/search.inverse.index.js";
 
 import AppError from "../utils/app.error.js";
-import { catchAsync } from "../utils/utils.js";
+import { catchAsync, isIdNumber } from "../utils/utils.js";
 
 const FILE_PATH = 'DATA_TEST.json';
 
@@ -52,40 +53,54 @@ const toMap = (currentNotes: NoteTable[]):Map<number, NoteTable> =>{
     return mapNotes;
 
 }
+/**
+ * cache manager
+ */
+const noteCacheManager= new noteManager<number,NoteTable>()
+noteCacheManager.loadData(await readDB().then(data=>toMap(data)))
+
+//get last key 
+
+//fast search with reverse index
+const data= await readDB()
+
+const searchFormat= new Map<number,string>();
+
+data.forEach(d=>{
+
+searchFormat.set(d.id,d.content)
+
+
+})
+/**
+ * index search vert fast
+ */
+const searchInversIndex=new InverseIndex()
+searchInversIndex.buildIndex(searchFormat)
+
+
+
 
 // Initial data load
-let noteCache: NoteTable[] = await readDB()
+//let noteCache: Map<number,NoteTable>= await readDB().then(data=>toMap(data))
+
 
 export const createNoteService = async (title: string, content: string):Promise<number> => {
   
     try{    
-    const currentNotes:NoteTable[] = noteCache;
-        const lastNote:NoteTable|undefined= currentNotes[currentNotes.length-1];
-        
-        const lastId:number|undefined=lastNote?.id
-
-    
-        
-
-       
-       
-        const newId=(lastId??0 )+1
         const newNote: NoteTable = {
-            id: newId,
+            id:0,
             title,
             content,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
         };
         
-        if(lastNote)  currentNotes.push(lastNote)
-        
-        currentNotes.push(newNote);
-        writeDB(currentNotes);
-        
-        // Update local cache
-        noteCache = currentNotes;
-        return newId;
+        const lastNote=noteCacheManager.create(newNote)
+
+        //UPDATE DATABASE WE NEED TO MAKE IT WAIT SEVERAL MINUTES BEFORE WRITING TO DB SINCE USER MAY CHANGE OPINION
+        writeDB(noteCacheManager.offloadData());
+        return lastNote;
 }catch(err){
 throw new AppError("Can not create note ",500,"error in service")
 
@@ -99,58 +114,61 @@ throw new AppError("Can not create note ",500,"error in service")
 };
 
 export const getAllNotesService =async ():Promise<NoteTable[]> => {
-    const data:NoteTable[] = await readDB() as NoteTable[]
-    return data
+        return await readDB() // WE NEED TO READ FROM DB SINCE WE NEED ALL DATA CACHE MAY NOT STORE ALL DATA SINCE IT IS SMALLAR SIZE
 };
 
 export const deleteNoteService = async(id: number): Promise<boolean> => {
     try {
-        const currentNotes = await readDB();
-        const initialLength = currentNotes.length;
-        const filteredNotes = currentNotes.filter(note => note.id !== id);
+       const isDeleted:boolean = noteCacheManager.delete(id);
 
-        if (filteredNotes.length === initialLength) {
-            return false; // Note wasn't found
-        }
+        
+      if(!isDeleted){
+        return isDeleted
+      }
 
-       await writeDB(filteredNotes);
-        notes = filteredNotes; // Sync local cache
-        return true;
+       await writeDB(noteCacheManager.offloadData());
+      
+        return isDeleted;
     } catch (error) {
-        throw error;
+        throw new AppError("Can not delete note ",500,"error in service");
     }
 };
 
-export const getNoteByIdService = (id: number): NoteTable | undefined => {
+export const getNoteByIdService = (id: number): NoteTable | boolean => {
     // We can use the local cache for reads to be faster
-    return notes.find(note => note.id === id);
+    return noteCacheManager.get(id)?? false
 };
 
 export const updateNoteService = async(id: number, modifiedData: Partial<NoteTable>):Promise< NoteTable>  => {
     
-        const currentNotes = await readDB();
-        const index = currentNotes.findIndex(note=> note.id===id)
+      
 
 
-        if (index === -1) throw new AppError(`Note with id ${id} not found`,404,"Invalid ID");
 
+        try{
 
-        currentNotes[index] = {
-            ...currentNotes[index],
-            ...modifiedData,
+        const updatedData:NoteTable = {id:id,
+                    ...modifiedData,
             updated_at: new Date().toISOString()
         } as NoteTable;
 
-        writeDB(currentNotes);
-        notes = currentNotes; // Sync local cache
 
-        return currentNotes[index];
-   
+        const isUpdated= noteCacheManager.update(id, updatedData);
+        if(!isUpdated)   throw new AppError(`Note with id ${id} not found`,404,"Invalid ID");
+
+        
+         writeDB(noteCacheManager.offloadData());
+     
+
+        return noteCacheManager.get(id) as NoteTable;
+    }catch(err){
+        throw err
+    }
 };
 
 export const getNotesByPaginationService = async(page: number, limit: number):Promise< NoteTable[]> => {
     try {
-        notes=await readDB() as NoteTable[]; // Read from the local cache or database)
+       const notes=await readDB() as NoteTable[]; // Read from the local cache or database)
         const skip = (page - 1) * limit;
         return notes.slice(skip, skip + limit) as NoteTable[] ; 
     } catch (err) {
@@ -161,10 +179,12 @@ export const getNotesByPaginationService = async(page: number, limit: number):Pr
 
 export const searchService = (keyword: string): NoteTable[] | undefined => {
     if (!keyword) return undefined;
-    const lowerKeyword = keyword.toLowerCase();
+   
     
-    return notes.filter(note => 
-        note.content.toLowerCase().includes(lowerKeyword) || 
-        note.title.toLowerCase().includes(lowerKeyword)
-    );
+    const ids:Set<number>=searchInversIndex.find(keyword);
+
+    return ids ? Array.from(ids).map(id => noteCacheManager.get(id) as NoteTable) : undefined;
+
+
+
 };
