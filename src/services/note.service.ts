@@ -28,7 +28,7 @@ const writeDB = async (data: NoteTable[]): Promise<void> => {
 };
 
 // --- Singleton Instances ---
-// We initialize these once. In a real app, you might use Dependency Injection.
+
 const noteCacheManager = new noteManager<number, NoteTable>();
 const searchInverseIndex = new InverseIndex();
 
@@ -66,12 +66,7 @@ export const createNoteService = async (title: string, content: string): Promise
 
     const newId = noteCacheManager.create(newNote);
 
-    // 2. Update Search Index
-    // We need to re-index this specific note. For simplicity, we can just add it.
-    // Ideally, InverseIndex should have an `add(id, content)` method.
-    // Since your current InverseIndex likely rebuilds or adds, we simulate updating it:
-    // (Assuming you add an 'add' method to your InverseIndex class, otherwise simple rebuild)
-    // searchInverseIndex.add(newId, content); 
+     searchInverseIndex.add(newId, content); 
     
     // 3. Persist to Disk
     await writeDB(noteCacheManager.offloadData());
