@@ -11,13 +11,12 @@ export const validateNoteMiddlewareOptional = (keys: string[]) => {
 
     return (req: Request, res: Response, next: NextFunction) => {
        
-  /*
+        /*
         Check if body has fileds
         */
         if (!req.body) {
             return next(new AppError('Request body is missing', 400, 'Validation Failure'));
         }
-
 
         const errors: string[] = []
         keys.forEach(key => {
@@ -34,19 +33,11 @@ export const validateNoteMiddlewareOptional = (keys: string[]) => {
             }
         }
         )
-
-
-
-
         if (errors.length > 0) {
             return next(new AppError(errors.join(','), 400, "Validation Failure"))
-
         }
         next()
-
-
-    }
-
+}
 }
 
 export const validateNoteMiddlewareStrict = (keys: string[]) => {
