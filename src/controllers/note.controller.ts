@@ -1,6 +1,5 @@
-// controllers/note.controller.ts
 import type { Request, Response, NextFunction } from "express";
-import * as Service from "../services/note.service.js"; // Namespace import for cleaner code
+import * as Service from "../services/note.service.js"; 
 import AppError from "../utils/app.error.js";
 import { catchAsync } from "../utils/utils.js";
 import { isIdNumber } from "../utils/utils.js";
@@ -33,7 +32,7 @@ export const getNotes = catchAsync(async (req: Request, res: Response, next: Nex
 });
 
 export const createNotes = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    // Validation is handled by middleware before this function
+    
     const { title, content } = req.body;
     
     const id = await Service.createNoteService(title, content);

@@ -1,4 +1,3 @@
-// middleware/validate.middleware.ts
 import type { Request, Response, NextFunction } from "express";
 import validator from "validator";
 import AppError from "../utils/app.error.js";
@@ -50,6 +49,3 @@ export const validateBody = (fields: string[], options: ValidationOptions = {}) 
     };
 };
 
-// Usage examples for your routes:
-// router.post('/', validateBody(['title', 'content'], { isRequired: true }), controller.createNotes);
-// router.patch('/:id', validateBody(['title', 'content'], { isRequired: false }), controller.updateNote);
