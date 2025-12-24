@@ -10,9 +10,17 @@ constructor(words?:Map<string,Set<number>>){
 }
 
 buildIndex(notes: Map<number, string>) {
+    
+    
+    
     for (const [id, content] of notes.entries()) {
-      
-        const tokens = content
+    
+        if (!content || typeof content !== 'string') {
+            console.warn(`Skipping note ${id}: Content is missing or invalid.`);
+            continue; 
+        }
+        
+        const tokens:string[] = content
             .toLowerCase()
             .split(/\s+/) //remove all whitespace with one or more subsequenceoccurences 
             .map(word => word.replace(/[^a-z0-9]/g, '')) //replace any non-alphanumeric characters with nothing 

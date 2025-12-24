@@ -21,7 +21,7 @@ export class noteManager<T extends number, D> {
     }
     create(data: D): T {
         this.lastId = this.increment(this.lastId)
-
+        
         this.cache.set(this.lastId, data);
         return this.lastId
 

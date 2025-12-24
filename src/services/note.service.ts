@@ -98,13 +98,24 @@ export const getNoteByIdService = (id: number): NoteTable | null => {
 
 export const updateNoteService = async (id: number, modifiedData: Partial<NoteTable>): Promise<NoteTable> => {
     const currentNote = noteCacheManager.get(id);
+
     if (!currentNote) {
         throw new AppError(`Note with id ${id} not found`, 404, "Not found");
     }
 
+    if(modifiedData.content) {
+        currentNote.content = modifiedData.content;
+        // Update search index too;
+
+    }
+    if(modifiedData.title) {
+
+         currentNote.title = modifiedData.title;
+
+    }
     const updatedNote: NoteTable = {
         ...currentNote,
-        ...modifiedData,
+        
         updated_at: new Date().toISOString()
     };
 
