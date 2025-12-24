@@ -57,16 +57,17 @@ initService();
 export const createNoteService = async (title: string, content: string): Promise<number> => {
     // 1. Create in Cache
     const newNote: NoteTable = {
-        id: 0, // Manager handles ID generation logic assuming it finds the max ID
+        id: noteCacheManager.getLastKey() + 1,
         title,
         content,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
     };
-
+    
     const newId = noteCacheManager.create(newNote);
-
-     searchInverseIndex.add(newId, content); 
+    //2-Add newId to Search Index
+    
+    searchInverseIndex.add(newId, content); 
     
     // 3. Persist to Disk
     await writeDB(noteCacheManager.offloadData());

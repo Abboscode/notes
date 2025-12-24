@@ -4,13 +4,11 @@ import router from "./routes/note.routes.js";
 
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
 import AppError from "./utils/app.error.js";
+
 const app:Application = express();
 
 
-
-
 app.use(express.json())
-
 
 // Register routes
 app.use("/notes",router)
