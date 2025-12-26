@@ -27,12 +27,12 @@ const writeDB = async (data: NoteTable[]): Promise<void> => {
     }
 };
 
-// --- Singleton Instances ---
+//  Should be !Singleton Instances
 
 const noteCacheManager = new noteManager<number, NoteTable>();
 const searchInverseIndex = new InverseIndex();
 
-// --- Initialization Logic ---
+// Initialization
 export const initService = async () => {
     const data = await readDB();
     
@@ -49,7 +49,7 @@ export const initService = async () => {
     console.log("Service initialized: Data loaded into Cache and Search Index.");
 };
 
-// Auto-init for simplicity in this setup (consider calling this from app.ts instead)
+// Auto-init for simplicity in this setup (consider calling this from app.ts instead) TODO
 initService();
 
 // --- Services ---
